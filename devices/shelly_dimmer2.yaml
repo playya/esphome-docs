@@ -1,0 +1,96 @@
+esphome:
+  name: <NAME_OF_NODE>
+  platform: ESP8266
+  board: modwifi
+  arduino_version: 2.7.4
+
+# Enable logging
+logger:
+  #level: VERBOSE #Change the log level as required; during testing verbose is helpful. 
+  # disable serial logging as we ar eusing the pins as button inputs
+  baud_rate: 0
+  
+# Enable Home Assistant API
+api:
+
+# Enable OTA updates
+ota:
+
+wifi:
+  ssid: !secret ssid
+  password: !secret wifi_password
+
+# Sensors with general information.
+sensor:
+    # NTC Temperature
+  - platform: ntc
+    sensor: temp_resistance_reading
+    name: Shelly Dimmer Temperature
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    icon: "mdi:thermometer"
+    calibration:
+      b_constant: 3350
+      reference_resistance: 10kOhm
+      reference_temperature: 298.15K
+
+  - platform: resistance
+    id: temp_resistance_reading
+    sensor: temp_analog_reading
+    configuration: DOWNSTREAM
+    resistor: 32kOhm
+  - platform: adc
+    id: temp_analog_reading
+    pin: A0
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: GPIO14
+      mode: INPUT
+      inverted: False
+    filters:
+      - delayed_on_off: 100ms
+    name: Switch1
+#    internal: True # don't report to HA
+    id: switch1
+
+  - platform: gpio
+    pin:
+      number: GPIO12
+      mode: INPUT
+      inverted: False
+    filters:
+      - delayed_on_off: 100ms
+    name: Switch2
+    id: switch2
+
+uart:
+    tx_pin: 1
+    rx_pin: 3
+    baud_rate: 115200
+
+light:
+  # Dimmer.
+  - platform: shelly_dimmer
+    name:  Dimmer
+    id: shelly_dimmer2
+    leading_edge: false
+    min_brightness: 0
+    max_brightness: 1000
+    gamma_correct: 1
+    default_transition_length: 1s
+    restore_mode: RESTORE_DEFAULT_OFF
+
+    power:
+      name: Shelly Dimmer Power
+    voltage:
+      name: Shelly Dimmer Voltage
+    current:
+      name: Shelly Dimmer Current
+    
+status_led:
+  pin:
+    number: GPIO16
+    inverted: yes
+
